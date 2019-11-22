@@ -1,0 +1,26 @@
+ls 10* -d>DirList.txt
+declare -i count=0;
+declare -i point=0;
+declare -i timeoutRange=0;
+while read line; 
+do 
+	cd $line;
+	echo $line;
+	timeout 60 ../main.exe -k ;
+	if [ $? == 124 ]; then
+		echo "  Time-Out";
+		timeoutRange=$timeoutRange+1;
+	else
+		../checkRule.exe;
+		if [ $? == 1 ]; then
+			echo "  Something may wrong. To know more, see ruleResult.txt";
+		else
+			point=point+1;
+			echo "  Success";
+		fi
+	fi
+	cd ..;
+	count=$count+1;
+done <DirList.txt;
+echo "Point=" $point"/"$count;
+echo "time-out=" $timeoutRange;
