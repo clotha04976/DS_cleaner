@@ -1,4 +1,4 @@
-ls 10* -d>DirList.txt
+ls *_Testcase -d>DirList.txt
 declare -i count=0;
 declare -i point=0;
 declare -i timeoutRange=0;

@@ -164,7 +164,7 @@ void dijkstra(char** map, point start, int** distance,point** pred  ) {
    }
 }
 
-point goArround(point current, int** distance, int& power){
+point goArround(point current, int** distance, int& power, point** pred){
     if (current.col + 1 < cols && distance[current.row][current.col + 1] < power && map[current.row][current.col + 1] != 'C') {
         map[current.row][current.col + 1] = 'C';
         current = point(current.row, current.col + 1);
@@ -186,30 +186,31 @@ point goArround(point current, int** distance, int& power){
         current = point(current.row - 1, current.col);
     //	cout << current << endl;
     }
-
-    //else if (distance[current.row][current.col]+1 >= power || allCleaned){ // No more power, must go back
-        else if (current.col + 1 < cols && distance[current.row][current.col + 1] < power) {
-            current = point(current.row, current.col + 1);
-    //		cout << current << endl;
-        }
-        else if (current.row + 1 < rows &&  distance[current.row +1][current.col] < power) {
-            current = point(current.row+1, current.col);
-    //		cout << current << endl;
-        }
-        else if (current.col > 0 && distance[current.row][current.col - 1] < power) {
-            current = point(current.row, current.col - 1);
-    //		cout << current << endl;
-        }
-        else if (current.row > 0 &&  distance[current.row - 1][current.col] < power) {
-            current = point(current.row - 1, current.col);
-    //		cout << current << endl;
-        }
-        else {
-    //		cout << "error" << endl;
-        }
+    else{
+        current = pred[current.row][current.col];
+    }
+/*
+    else if (current.col + 1 < cols && distance[current.row][current.col + 1] < power) {
+        current = point(current.row, current.col + 1);
+//		cout << current << endl;
+    }
+    else if (current.row + 1 < rows &&  distance[current.row +1][current.col] < power) {
+        current = point(current.row+1, current.col);
+//		cout << current << endl;
+    }
+    else if (current.col > 0 && distance[current.row][current.col - 1] < power) {
+        current = point(current.row, current.col - 1);
+//		cout << current << endl;
+    }
+    else if (current.row > 0 &&  distance[current.row - 1][current.col] < power) {
+        current = point(current.row - 1, current.col);
+//		cout << current << endl;
+    }*/
     return current;
 
 }
+
+
 
 bool allClean(){
     for (int i = 0 ; i < rows; i ++){
@@ -275,12 +276,16 @@ int main()
 		}
 		//cout << "main distance" << endl;
 		//showMap<int>(distance);
-        //cout << "longest Point: " << longestPoint << endl;
+        //cout << "longest Point: " << longestPoint << " long : " << longest << endl;
 		// Go to longest point
 		stack<point> s;
 		point current(longestPoint.row, longestPoint.col);
 
-		int powerPredict = power - distance[longestPoint.row][longestPoint.col];
+		int powerPredict = distance[longestPoint.row][longestPoint.col];
+		if (power/2 > distance[longestPoint.row][longestPoint.col]){
+            powerPredict = power - distance[longestPoint.row][longestPoint.col];
+		}
+		//cout <<"powerPredict " << powerPredict <<endl;
 		do {
 			s.push(current);
 			if (map[pred[current.row][current.col].row][pred[current.row][current.col].col] != 'C'){
@@ -288,7 +293,7 @@ int main()
                 powerPredict--;
 			}
 			else{
-                current = goArround(current, distance, powerPredict );
+                current = goArround(current, distance, powerPredict, pred );
                 powerPredict--;
 			}
 			//cout << current << " ";
@@ -298,19 +303,22 @@ int main()
 		//	cout << s.top() <<endl;
 			outputResult.push(s.top());
 			map[s.top().row][s.top().col] = 'C'; //表示已經Clean 過了
+
 			power--;
 			countResult++;
 			s.pop();
 		}
 
-		//cout << "Go to longest" << endl;
+		//cout << "Longest back" << endl;
 		//showMap<char>(map);
 		//DFS
 		current = longestPoint;
 		while (current != R) {
-			current = goArround(current, distance, power );
+
+			current = goArround(current, distance, power, pred );
             outputResult.push(current);
             power--;
+        //    cout << " power :" << power << endl;
             countResult++;
 		}
 		power = FullPower;
@@ -320,6 +328,7 @@ int main()
 	// */
 	result << countResult << endl;
 	int cntOne=0;
+	//cout <<"go back " <<endl;
 	while (!outputResult.empty()) {
 		result << outputResult.front() << endl;
 		outputResult.pop();
